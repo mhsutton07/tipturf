@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 
 export async function POST(request: NextRequest) {
   const buf = Buffer.from(await request.arrayBuffer());
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       const customerId = typeof session.customer === 'string' ? session.customer : null;
 
       if (userId && customerId) {
-        await supabaseAdmin
+        await getSupabaseAdmin()
           .from('profiles')
           .upsert(
             { id: userId, stripe_customer_id: customerId, stripe_status: 'active' },
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       const status = subscription.status;
 
       if (customerId) {
-        await supabaseAdmin
+        await getSupabaseAdmin()
           .from('profiles')
           .update({ stripe_status: status })
           .eq('stripe_customer_id', customerId);
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       const customerId = typeof subscription.customer === 'string' ? subscription.customer : null;
 
       if (customerId) {
-        await supabaseAdmin
+        await getSupabaseAdmin()
           .from('profiles')
           .update({ stripe_status: 'canceled' })
           .eq('stripe_customer_id', customerId);
