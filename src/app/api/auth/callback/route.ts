@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
 
-// Supabase OAuth callback handler (Phase 2)
+// Handles Supabase email confirmation redirects
 export async function GET(request: NextRequest) {
   const supabase = createServerClient();
 

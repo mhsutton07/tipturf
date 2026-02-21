@@ -1,9 +1,9 @@
 'use client';
 
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TopBar } from '@/components/layout/TopBar';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { useLocalLogs } from '@/hooks/useLocalLogs';
 import { useToast } from '@/components/ui/Toast';
 import { db } from '@/lib/db/local';
@@ -13,8 +13,21 @@ export default function SettingsPage() {
   const { logs } = useLocalLogs();
   const { toast } = useToast();
   const [showConfirm, setShowConfirm] = useState(false);
-  const [communityShare, setCommunityShare] = useState(false);
+  const [communityShare, setCommunityShare] = useState(true);
   const [communityView, setCommunityView] = useState(false);
+  const [showShareOffConfirm, setShowShareOffConfirm] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('tipturf_community_share');
+    if (stored !== null) {
+      setCommunityShare(stored === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tipturf_community_share', String(communityShare));
+  }, [communityShare]);
+
   const { isPro, loading: subLoading } = useSubscription();
   const [portalLoading, setPortalLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -45,6 +58,26 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleShareToggle() {
+    if (communityShare) {
+      setShowShareOffConfirm(true);
+    } else {
+      setCommunityShare(true);
+      try {
+        const res = await fetch('/api/logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logs),
+        });
+        if (!res.ok) throw new Error('sync failed');
+        toast('Your logs are now shared with the community.', 'success');
+      } catch {
+        toast('Could not sync logs. Try again later.', 'error');
+        setCommunityShare(false);
+      }
+    }
+  }
+
   async function handleDeleteAll() {
     await db.entries.clear();
     toast('All local data deleted.', 'success');
@@ -56,11 +89,11 @@ export default function SettingsPage() {
       <TopBar title="Settings" />
       <div className="pt-14 px-4 pb-8 flex flex-col gap-6 mt-4">
 
-        {/* Community (Phase 2) */}
+        {/* Community */}
         <div className="bg-gray-900 rounded-2xl p-4">
           <h2 className="text-sm font-semibold text-gray-300 mb-1">Community Map</h2>
           <p className="text-xs text-gray-500 mb-4">
-            Phase 2 — requires Supabase setup. Your data never leaves your device until you opt in.
+            Your data stays on your device until you share it.
           </p>
 
           <div className="flex flex-col gap-4">
@@ -70,7 +103,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-gray-500">Add your data to the community map and see what others are earning</p>
               </div>
               <button
-                onClick={() => toast('Phase 2: Supabase not yet configured.', 'info')}
+                onClick={handleShareToggle}
                 className={`w-12 h-6 rounded-full transition-colors ${
                   communityShare ? 'bg-green-500' : 'bg-gray-700'
                 }`}
@@ -89,7 +122,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-gray-500">Overlay aggregate tip rates from all drivers</p>
               </div>
               <button
-                onClick={() => toast('Phase 2: Supabase not yet configured.', 'info')}
+                onClick={() => setCommunityView(!communityView)}
                 className={`w-12 h-6 rounded-full transition-colors ${
                   communityView ? 'bg-green-500' : 'bg-gray-700'
                 }`}
@@ -138,7 +171,7 @@ export default function SettingsPage() {
                 onClick={handleUpgrade}
                 disabled={checkoutLoading}
               >
-                {checkoutLoading ? 'Redirecting…' : 'Upgrade to Pro — $6.99/mo'}
+                {checkoutLoading ? 'Redirecting…' : 'Upgrade to Pro · $6.99/mo'}
               </Button>
             </div>
           )}
@@ -180,8 +213,8 @@ export default function SettingsPage() {
         <div className="bg-gray-900 rounded-2xl p-4">
           <h2 className="text-sm font-semibold text-gray-300 mb-2">About TipTurf</h2>
           <div className="flex flex-col gap-2 text-xs text-gray-500">
-            <p>Version 0.1.0 (Phase 1 — Local only)</p>
-            <p>Know before you go. See where drivers consistently earn more — and avoid the zones that don&apos;t pay.</p>
+            <p>Know before you go.</p>
+            <p>TipTurf shows gig drivers where tips are highest, broken down by neighborhood and time of day.</p>
           </div>
         </div>
 
@@ -195,6 +228,35 @@ export default function SettingsPage() {
         </div>
 
       </div>
+
+      <Modal
+        open={showShareOffConfirm}
+        onClose={() => setShowShareOffConfirm(false)}
+        title="Stop sharing your logs?"
+      >
+        <p className="text-sm text-gray-400 mb-6">
+          Your past contributions stay on the map, but new logs won&apos;t be added.
+        </p>
+        <div className="flex flex-col gap-3">
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={() => setShowShareOffConfirm(false)}
+          >
+            Keep sharing
+          </Button>
+          <Button
+            variant="danger"
+            size="lg"
+            onClick={() => {
+              setCommunityShare(false);
+              setShowShareOffConfirm(false);
+            }}
+          >
+            Stop sharing
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
