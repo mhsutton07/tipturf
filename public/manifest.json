@@ -1,0 +1,37 @@
+{
+  "name": "TipTurf — Gig Driver Heat Map",
+  "short_name": "TipTurf",
+  "description": "Track and visualize tip patterns in your delivery zones. No PII, zone-level insight only.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Log Delivery",
+      "url": "/log",
+      "description": "Record a new delivery"
+    },
+    {
+      "name": "View Stats",
+      "url": "/stats",
+      "description": "View your tip stats"
+    }
+  ]
+}
