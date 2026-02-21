@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UpgradeModalProps {
   onDismiss: () => void;
@@ -10,8 +12,15 @@ interface UpgradeModalProps {
 
 export function UpgradeModal({ onDismiss }: UpgradeModalProps) {
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
 
   async function handleUpgrade() {
+    if (!user) {
+      onDismiss();
+      router.push('/login?returnTo=/');
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch('/api/checkout', { method: 'POST' });
@@ -27,7 +36,7 @@ export function UpgradeModal({ onDismiss }: UpgradeModalProps) {
   return (
     <Modal open={true} onClose={onDismiss} title="Unlock the Community Heatmap">
       <p className="text-sm text-gray-400 mb-6">
-        See where thousands of drivers earn the most — updated live. $6.99/mo, cancel anytime.
+        See where thousands of drivers earn the most, updated live. $6.99/mo, cancel anytime.
       </p>
       <div className="flex flex-col gap-3">
         <Button
