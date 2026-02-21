@@ -181,7 +181,7 @@ export default function SettingsPage() {
           <h2 className="text-sm font-semibold text-gray-300 mb-2">About TipTurf</h2>
           <div className="flex flex-col gap-2 text-xs text-gray-500">
             <p>Version 0.1.0 (Phase 1 — Local only)</p>
-            <p>Know before you go. See where drivers consistently earn more — and avoid the zones that don't pay.</p>
+            <p>Know before you go. See where drivers consistently earn more — and avoid the zones that don&apos;t pay.</p>
           </div>
         </div>
 
